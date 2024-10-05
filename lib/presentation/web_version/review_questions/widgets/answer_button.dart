@@ -24,7 +24,7 @@ class AnswerButton extends StatelessWidget {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: isSelected
-              ? (isCorrect ? AppColors.correctAnswer : AppColors.wrongAnswer)
+              ? (isCorrect ? AppColors.successColor : AppColors.failureColor)
               : AppColors.white,
         ),
         onPressed: onPressed,
