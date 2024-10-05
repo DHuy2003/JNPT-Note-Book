@@ -4,6 +4,7 @@ import 'package:note_book_app/common/colors/app_colors.dart';
 import 'package:note_book_app/common/utils/responsive_util.dart';
 import 'package:note_book_app/core/services/get_it_service.dart';
 import 'package:note_book_app/domain/entities/lesson_entity.dart';
+import 'package:note_book_app/presentation/web_version/keep/keep_page_web.dart';
 import 'package:note_book_app/presentation/web_version/lesson/cubits/character_page_web/character_page_web_cubit.dart';
 import 'package:note_book_app/presentation/web_version/lesson/cubits/character_page_web/character_page_web_state.dart';
 import 'package:note_book_app/presentation/web_version/lesson/widgets/character_page_web/action_button.dart';
@@ -31,7 +32,11 @@ class _CharacterPageWebState extends State<CharacterPageWeb> {
         );
   }
 
-  void _handleStartQuestionsPhase(BuildContext context) {}
+  void _handleStartQuestionsPhase(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const KeepPageWeb()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
