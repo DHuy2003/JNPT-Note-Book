@@ -4,7 +4,8 @@ import 'package:note_book_app/common/colors/app_colors.dart';
 import 'package:note_book_app/common/utils/responsive_util.dart';
 import 'package:note_book_app/core/services/get_it_service.dart';
 import 'package:note_book_app/domain/entities/lesson_entity.dart';
-import 'package:note_book_app/presentation/web_version/keep/keep_page_web.dart';
+import 'package:note_book_app/presentation/web_version/lesson/cubits/keep_page_web/keep_page_web_cubit.dart';
+import 'package:note_book_app/presentation/web_version/lesson/widgets/keep_page_web/keep_page_web.dart';
 import 'package:note_book_app/presentation/web_version/lesson/cubits/character_page_web/character_page_web_cubit.dart';
 import 'package:note_book_app/presentation/web_version/lesson/cubits/character_page_web/character_page_web_state.dart';
 import 'package:note_book_app/presentation/web_version/lesson/widgets/character_page_web/action_button.dart';
@@ -33,9 +34,7 @@ class _CharacterPageWebState extends State<CharacterPageWeb> {
   }
 
   void _handleStartQuestionsPhase(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const KeepPageWeb()),
-    );
+    context.read<CharacterPageWebCubit>().showKeepPageWeb();
   }
 
   @override
@@ -73,7 +72,7 @@ class _CharacterPageWebState extends State<CharacterPageWeb> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ActionButton(
-                    text: 'Ghi nhớ',
+                    text: 'Ôn tập',
                     onPressed: _handleStartQuestionsPhase,
                   ),
                 ],
@@ -81,9 +80,14 @@ class _CharacterPageWebState extends State<CharacterPageWeb> {
               const SizedBox(height: 16),
               BlocConsumer<CharacterPageWebCubit, CharacterPageWebState>(
                 buildWhen: (previous, current) =>
-                    current is CharacterPageWebLoaded,
+                    current is CharacterPageWebLoaded ||
+                    current is CharacterPageWebKeepPage,
                 listener: (context, state) {
-                  if (state is CharacterPageWebFailure) {}
+                  if (state is CharacterPageWebFailure) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(state.failureMessage)),
+                    );
+                  }
                 },
                 builder: (context, state) {
                   if (state is CharacterPageWebLoading) {
@@ -96,12 +100,21 @@ class _CharacterPageWebState extends State<CharacterPageWeb> {
                       ),
                     );
                   }
+
+                  if (state is CharacterPageWebKeepPage) {
+                    return BlocProvider<KeepPageWebCubit>(
+                      create: (context) => KeepPageWebCubit(),
+                      child: const KeepPageWeb(),
+                    );
+                  }
+
                   if (state is CharacterPageWebLoaded) {
                     return CharacterTable(
                       characterType: state.characterType,
                       characters: state.characters,
                     );
                   }
+
                   return const SizedBox();
                 },
               ),

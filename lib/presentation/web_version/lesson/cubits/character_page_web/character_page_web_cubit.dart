@@ -21,4 +21,8 @@ class CharacterPageWebCubit extends Cubit<CharacterPageWebState> {
       )),
     );
   }
+
+  void showKeepPageWeb() {
+    emit(CharacterPageWebKeepPage());
+  }
 }

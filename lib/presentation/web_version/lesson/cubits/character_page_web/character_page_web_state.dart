@@ -23,6 +23,9 @@ class CharacterPageWebLoaded extends CharacterPageWebState {
   List<Object?> get props => [characters, characterType];
 }
 
+
+class CharacterPageWebKeepPage extends CharacterPageWebState {}
+
 class CharacterPageWebFailure extends CharacterPageWebState {
   final String failureMessage;
 
