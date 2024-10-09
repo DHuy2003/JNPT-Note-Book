@@ -33,7 +33,7 @@ class KunyomiDatasourceImpl implements KunyomiDatasource {
       return kuns;
     } on FirebaseException catch (e) {
       log(e.toString());
-      throw FirestoreFailure(message: e.message.toString());
+      throw FirestoreFailure(message: "Có lỗi xảy ra khi truy cập Kunyomi");
     } on Exception {
       throw UnknownFailure();
     }
@@ -85,6 +85,27 @@ class KunyomiDatasourceImpl implements KunyomiDatasource {
         'sample': sample,
         'transform': transform,
       });
+      return true;
+    } on FirebaseException catch (e) {
+      log(e.toString());
+      return false;
+    } on Exception {
+      throw UnknownFailure();
+    }
+  }
+
+  @override
+  Future<bool> deleteKunyomiByKanjiId({
+    required String kanjiId,
+    required String kunyomiId,
+  }) async {
+    try {
+      await firebaseFirestore
+          .collection('kanjis')
+          .doc(kanjiId)
+          .collection('kun')
+          .doc(kunyomiId)
+          .delete();
       return true;
     } on FirebaseException catch (e) {
       log(e.toString());

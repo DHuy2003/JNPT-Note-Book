@@ -11,8 +11,8 @@ class KanjiDatasourceImpl implements KanjiDatasource {
   const KanjiDatasourceImpl({required this.firebaseFirestore});
 
   @override
-  Future<List<KanjiModel>> getAllKanjisByLevel({
-    required String level,
+  Future<List<KanjiModel>> getAllKanjisByLevelId({
+    required String levelId,
     required int pageSize,
     required int pageNumber,
     required String hanVietSearchKey,
@@ -20,7 +20,7 @@ class KanjiDatasourceImpl implements KanjiDatasource {
     try {
       Query<Map<String, dynamic>> query = firebaseFirestore
           .collection('kanjis')
-          .where('level', isEqualTo: level);
+          .where('levelId', isEqualTo: levelId);
 
       if (hanVietSearchKey.isNotEmpty) {
         hanVietSearchKey = hanVietSearchKey[0].toUpperCase() +
@@ -33,7 +33,7 @@ class KanjiDatasourceImpl implements KanjiDatasource {
       if (pageNumber > 1) {
         Query<Map<String, dynamic>> previousPageQuery = firebaseFirestore
             .collection('kanjis')
-            .where('level', isEqualTo: level);
+            .where('levelId', isEqualTo: levelId);
 
         if (hanVietSearchKey.isNotEmpty) {
           previousPageQuery =
@@ -61,41 +61,51 @@ class KanjiDatasourceImpl implements KanjiDatasource {
           'kun': kanji.data()['kun'],
           'on': kanji.data()['on'],
           'viet': kanji.data()['viet'],
-          'level': kanji.data()['level'],
           'createdAt': kanji.data()['createdAt'],
+          'levelId': kanji.data()['levelId'],
         });
       }).toList();
 
       return kanjiList;
     } on FirebaseException catch (e) {
       log(e.toString());
-      throw FirestoreFailure(message: e.message.toString());
+      throw FirestoreFailure(message: "Có lỗi xảy ra khi truy cập Kanji");
     } on Exception catch (e) {
       throw Exception(e);
     }
   }
 
   @override
-  Future<bool> createKanjiByLevel({
-    required String level,
+  Future<KanjiModel> createKanjiByLevelId({
+    required String levelId,
     required String kanji,
     required String kun,
     required String on,
     required String viet,
   }) async {
     try {
-      await firebaseFirestore.collection('kanjis').add({
+      final kanjiDoc = await firebaseFirestore.collection('kanjis').add({
         'kanji': kanji,
         'kun': kun,
         'on': on,
         'viet': viet,
-        'level': level,
+        'levelId': levelId,
         'createdAt': Timestamp.now(),
       });
-      return true;
+
+      final kanjiData = await kanjiDoc.get();
+      return KanjiModel.fromJson({
+        'id': kanjiDoc.id,
+        'kanji': kanjiData.data()!['kanji'],
+        'kun': kanjiData.data()!['kun'],
+        'on': kanjiData.data()!['on'],
+        'viet': kanjiData.data()!['viet'],
+        'createdAt': kanjiData.data()!['createdAt'],
+        'levelId': kanjiData.data()!['levelId'],
+      });
     } on FirebaseException catch (e) {
       log(e.toString());
-      return false;
+      throw FirestoreFailure(message: "Có lỗi xảy ra khi tạo Kanji");
     } on Exception catch (e) {
       throw Exception(e);
     }
@@ -120,6 +130,41 @@ class KanjiDatasourceImpl implements KanjiDatasource {
     } on FirebaseException catch (e) {
       log(e.toString());
       return false;
+    } on Exception catch (e) {
+      throw Exception(e);
+    }
+  }
+
+  @override
+  Future<bool> deleteKanjiById({required String id}) async {
+    try {
+      await firebaseFirestore.collection('kanjis').doc(id).delete();
+      return true;
+    } on FirebaseException catch (e) {
+      log(e.toString());
+      return false;
+    } on Exception catch (e) {
+      throw Exception(e);
+    }
+  }
+
+  @override
+  Future<int> deleteKanjisByLevelId({required String levelId}) async {
+    try {
+      final kanjis = await firebaseFirestore
+          .collection('kanjis')
+          .where('levelId', isEqualTo: levelId)
+          .get();
+
+      for (final kanji in kanjis.docs) {
+        await kanji.reference.delete();
+      }
+
+      return kanjis.docs.length;
+    } on FirebaseException catch (e) {
+      log(e.toString());
+      throw FirestoreFailure(
+          message: "Có lỗi xảy ra khi xóa các Kanji khi xoá JNPT");
     } on Exception catch (e) {
       throw Exception(e);
     }

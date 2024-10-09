@@ -3,15 +3,15 @@ import 'package:note_book_app/core/failures/failure.dart';
 import 'package:note_book_app/domain/entities/kanji_entity.dart';
 
 abstract class KanjiRepository {
-  Future<Either<Failure, List<KanjiEntity>>> getAllKanjisByLevel({
-    required String level,
+  Future<Either<Failure, List<KanjiEntity>>> getAllKanjisByLevelId({
+    required String levelId,
     required int pageSize,
     required int pageNumber,
     required String hanVietSearchKey,
   });
 
-  Future<Either<Failure, bool>> createKanjjByLevel({
-    required String level,
+  Future<Either<Failure, KanjiEntity>> createKanjjByLevelId({
+    required String levelId,
     required String kanji,
     required String kun,
     required String on,
@@ -25,4 +25,9 @@ abstract class KanjiRepository {
     required String on,
     required String viet,
   });
+
+  Future<Either<Failure, bool>> deleteKanjiById({required String id});
+
+  Future<Either<Failure, int>> deleteKanjisByLevelId(
+      {required String levelId});
 }
