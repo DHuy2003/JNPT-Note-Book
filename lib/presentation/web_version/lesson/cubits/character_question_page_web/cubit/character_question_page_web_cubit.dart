@@ -1,29 +1,57 @@
 import 'package:bloc/bloc.dart';
-import 'package:dartz/dartz.dart';
-import 'package:equatable/equatable.dart';
-import 'package:note_book_app/core/failures/failure.dart';
-import 'package:note_book_app/core/services/get_it_service.dart';
 import 'package:note_book_app/domain/entities/question_entity.dart';
-import 'package:note_book_app/domain/usecases/characters/create_character_question_usecase.dart';
+import 'character_question_page_web_state.dart';
 
-part 'character_question_page_web_state.dart';
+class CharacterQuestionPageWebCubit
+    extends Cubit<CharacterQuestionPageWebState> {
+  CharacterQuestionPageWebCubit() : super(CharacterQuestionPageWebInitial());
 
-class CharacterQuestionPageWebCubit extends Cubit<CharacterQuestionPageWebState> {
-  final CreateCharacterQuestionUsecase createCharacterQuestionUsecase = getIt<CreateCharacterQuestionUsecase>();
+  List<QuestionEntity> _questions = [];
 
-  CharacterQuestionPageWebCubit()
-      : super(CharacterQuestionPageWebInitial());
+  void loadQuestions(List<QuestionEntity> questions) {
+    _questions = questions;
+    if (_questions.isNotEmpty) {
+      emit(CharacterQuestionPageWebLoaded(
+        currentQuestionIndex: 0,
+        questions: _questions,
+      ));
+    } else {
+      emit(CharacterQuestionPageWebFailure('No questions available.'));
+    }
+  }
 
-  Future<void> loadQuestions(int numberOfQuestions, String questionType, String answerType) async {
-    emit(CharacterQuestionPageWebLoading());
-    final Either<Failure, List<QuestionEntity>> result = await createCharacterQuestionUsecase(
-      numberOfQuestions: numberOfQuestions,
-      questionType: questionType,
-      answerType: answerType,
-    );
-    result.fold(
-      (failure) => emit(const CharacterQuestionPageWebError('Failed to load questions')),
-      (questions) => emit(CharacterQuestionPageWebLoaded(questions)),
-    );
+  void answerQuestion(String answer) async {
+    final currentState = state as CharacterQuestionPageWebLoaded;
+
+    if (currentState.currentQuestionIndex < currentState.questions.length) {
+      bool isCorrect = answer ==
+          currentState
+              .questions[currentState.currentQuestionIndex].correctAnswer;
+
+      emit(CharacterQuestionPageWebLoaded(
+        questions: currentState.questions,
+        currentQuestionIndex: currentState.currentQuestionIndex,
+        selectedAnswer: answer,
+      ));
+
+      await Future.delayed(const Duration(seconds: 1));
+
+      if (isCorrect) {
+        if (currentState.currentQuestionIndex + 1 <
+            currentState.questions.length) {
+          emit(CharacterQuestionPageWebLoaded(
+            questions: currentState.questions,
+            currentQuestionIndex: currentState.currentQuestionIndex + 1,
+          ));
+        } else {
+          emit(CharacterQuestionPageWebCompleted());
+        }
+      } else {
+        emit(CharacterQuestionPageWebLoaded(
+          questions: currentState.questions,
+          currentQuestionIndex: currentState.currentQuestionIndex,
+        ));
+      }
+    }
   }
 }

@@ -4,7 +4,10 @@ import 'package:note_book_app/common/colors/app_colors.dart';
 import 'package:note_book_app/common/utils/responsive_util.dart';
 import 'package:note_book_app/core/services/get_it_service.dart';
 import 'package:note_book_app/domain/entities/lesson_entity.dart';
+import 'package:note_book_app/domain/entities/question_entity.dart';
+import 'package:note_book_app/presentation/web_version/lesson/cubits/character_question_page_web/cubit/character_question_page_web_cubit.dart';
 import 'package:note_book_app/presentation/web_version/lesson/cubits/keep_page_web/keep_page_web_cubit.dart';
+import 'package:note_book_app/presentation/web_version/lesson/widgets/character_question_page_web/character_question_page_web.dart';
 import 'package:note_book_app/presentation/web_version/lesson/widgets/keep_page_web/keep_page_web.dart';
 import 'package:note_book_app/presentation/web_version/lesson/cubits/character_page_web/character_page_web_cubit.dart';
 import 'package:note_book_app/presentation/web_version/lesson/cubits/character_page_web/character_page_web_state.dart';
@@ -81,7 +84,8 @@ class _CharacterPageWebState extends State<CharacterPageWeb> {
               BlocConsumer<CharacterPageWebCubit, CharacterPageWebState>(
                 buildWhen: (previous, current) =>
                     current is CharacterPageWebLoaded ||
-                    current is CharacterPageWebKeepPage,
+                    current is CharacterPageWebKeepPage ||
+                    current is CharacterPageWebQuestionLoaded,
                 listener: (context, state) {
                   if (state is CharacterPageWebFailure) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -103,8 +107,18 @@ class _CharacterPageWebState extends State<CharacterPageWeb> {
 
                   if (state is CharacterPageWebKeepPage) {
                     return BlocProvider<KeepPageWebCubit>(
-                      create: (context) => KeepPageWebCubit(),
+                      create: (context) => KeepPageWebCubit(
+                          context.read<CharacterPageWebCubit>()),
                       child: const KeepPageWeb(),
+                    );
+                  }
+
+                  if (state is CharacterPageWebQuestionLoaded) {
+                    return BlocProvider<CharacterQuestionPageWebCubit>(
+                      create: (context) => CharacterQuestionPageWebCubit()
+                        ..loadQuestions(state.questions),
+                      child:
+                          CharacterQuestionPageWeb(questions: state.questions),
                     );
                   }
 

@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:note_book_app/domain/entities/character_entity.dart';
+import 'package:note_book_app/domain/entities/question_entity.dart';
 
 abstract class CharacterPageWebState extends Equatable {
   const CharacterPageWebState();
@@ -23,8 +24,16 @@ class CharacterPageWebLoaded extends CharacterPageWebState {
   List<Object?> get props => [characters, characterType];
 }
 
-
 class CharacterPageWebKeepPage extends CharacterPageWebState {}
+
+class CharacterPageWebQuestionLoaded extends CharacterPageWebState {
+  final List<QuestionEntity> questions;
+
+  const CharacterPageWebQuestionLoaded({required this.questions});
+
+  @override
+  List<Object?> get props => [questions];
+}
 
 class CharacterPageWebFailure extends CharacterPageWebState {
   final String failureMessage;

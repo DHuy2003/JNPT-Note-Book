@@ -1,30 +1,35 @@
-part of 'character_question_page_web_cubit.dart';
+import 'package:equatable/equatable.dart';
+import 'package:note_book_app/domain/entities/question_entity.dart';
 
 abstract class CharacterQuestionPageWebState extends Equatable {
-  const CharacterQuestionPageWebState();
-
   @override
   List<Object?> get props => [];
 }
 
-final class CharacterQuestionPageWebInitial extends CharacterQuestionPageWebState {}
+class CharacterQuestionPageWebInitial extends CharacterQuestionPageWebState {}
 
-final class CharacterQuestionPageWebLoading extends CharacterQuestionPageWebState {}
-
-final class CharacterQuestionPageWebLoaded extends CharacterQuestionPageWebState {
+class CharacterQuestionPageWebLoaded extends CharacterQuestionPageWebState {
+  final int currentQuestionIndex;
   final List<QuestionEntity> questions;
+  final String? selectedAnswer;
 
-  const CharacterQuestionPageWebLoaded(this.questions);
+  CharacterQuestionPageWebLoaded({
+    required this.currentQuestionIndex,
+    required this.questions,
+    this.selectedAnswer,
+  });
 
   @override
-  List<Object?> get props => [questions];
+  List<Object?> get props => [currentQuestionIndex, questions, selectedAnswer];
 }
 
-final class CharacterQuestionPageWebError extends CharacterQuestionPageWebState {
-  final String message;
+class CharacterQuestionPageWebCompleted extends CharacterQuestionPageWebState {}
 
-  const CharacterQuestionPageWebError(this.message);
+class CharacterQuestionPageWebFailure extends CharacterQuestionPageWebState {
+  final String failureMessage;
+
+  CharacterQuestionPageWebFailure(this.failureMessage);
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [failureMessage];
 }
